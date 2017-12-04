@@ -10,10 +10,9 @@ class BicycleMan:
 
         self.width = 710
         self.height = 410
-        self.scrollX = self.width*5
+        self.scrollX = 0
 
-        self.speed = 0
-        self.gravity = 0
+        self.gravity = 1
         self.numOfGround = 100
         self.groundList = []
         self.upperList = []
@@ -22,13 +21,17 @@ class BicycleMan:
         # self.startPoint = self.width/2
         self.manCX = 50
         self.manCY = 200
+        self.manWidth =  self.width/100 * math.cos(math.pi*1.83+self.manAngle) + self.width/200  -(self.width/100 * math.cos(math.pi*1.16+self.manAngle) + self.width/200)
+        self.manHeight = 20
+
 
         self.gameState = "PREPARE"
-        self.manState = 1
-        self.isManJumping = False
+        self.enableGravity = True
+
         self.xy1 = []
         self.manCollisionSide = False
-        self.manScrollX = 0
+
+        self.speedY = 0
 
         self.jumpDuration = 10
         self.jumpingTime = 0
@@ -70,8 +73,8 @@ class BicycleMan:
         if (event.keysym == "s") and self.gameState == "READY":
             self.gameState = "PLAYING"
 
-        if self.isManJumping == False and  (event.keysym == "Up"):
-            self.isManJumping = True
+        if self.enableGravity == False and  (event.keysym == "Up"):
+            self.jump()
 
         if self.gameState == "GAMEOVER":
             if (event.keysym == "r"):
@@ -84,34 +87,25 @@ class BicycleMan:
         self.time += self.timerDelay
         if self.gameState == "PLAYING":
             self.scrollX += 3
-        self.speed += 1
 
-        if self.manState == 1:
-            self.gravity += 10
+        if self.enableGravity:
+            self.speedY += self.gravity
+        self.manCY += self.speedY
 
-        if self.manCollisionSide:
-            self.manScrollX += 3
-
-        #if self.manState == 2:
-        #    self.gravity += 10
-        #    print(self.scrollX)
-        #    self.manCX -= self.scrollX
-
-        if self.isManJumping:
-            self.manCY -= 20
-
+        
         if self.gameState == "PLAYING":
             self.meterCount += 1
+            self.manCX += 3
 
         self.bestMeter = 0
 
     
         # for coord in self.upperList:
         #     if self.manCX >= coord[0] and self.manCX <= coord[1]:
-        #         self.manState = 0
+        #         self.enableGravity = 0
         #         return 
 
-        # print(self.manState)
+        # print(self.enableGravity)
 
         self.lightStart += 0.25
         # for i in range(len(self.cherryList)):
@@ -140,10 +134,7 @@ class BicycleMan:
 
 
     def redrawAll(self, canvas):
-        
-        self.collisionBottom()
-        self.collisionSide()
-
+        self.collision()
         self.createGround(canvas)
         self.drawBackground(canvas)
         self.drawLight(canvas)
@@ -157,10 +148,10 @@ class BicycleMan:
         self.drawGround(canvas)
         # self.deleteGround(canvas)
         self.drawMan(canvas)
-        self.jump(self.jumpDuration)
         self.isGameOver()
         self.drawGameOver(canvas)
         self.drawMeterCount(canvas)
+
         # self.deleteGround(canvas)
         # self.drawCherry(canvas)
         pass
@@ -210,9 +201,11 @@ class BicycleMan:
         canvas.create_line(armX1, armY1, armX2, armY2, fill="black", width=self.width/300)
 
 
+
     def drawMan(self, canvas):
         if not self.gameState == "GAMEOVER":
-            self.man(canvas, self.manCX-self.manScrollX, self.manCY + self.gravity)
+            self.man(canvas, self.manCX-self.scrollX, self.manCY)
+
 
     def drawStart(self, canvas):
         if self.gameState == "READY":
@@ -287,24 +280,68 @@ class BicycleMan:
             # print("false2")
             return False
 
+    def collisionRectRect(self, rect, rect2):
+        if rect[2] < rect2[0]:
+            return ""
+        if rect2[2] < rect[0]:
+            return ""
+        if rect[3] < rect2[1]:
+            return ""
+        if rect2[3] < rect[1]:
+            return ""
 
+        dy = rect2[3] - rect[1] #Upper
+        dx1 = rect2[2] - rect[0] #Left
+        dx2 = rect[2] - rect2[0] #Right
 
-    def collisionBottom(self):
-        for line in self.upperList:
+        if dy < dx1 and dy < dx2:
+            return "Upper"
+        elif dx1 < dy and dx1 < dx2:
+            return "Left"
+        else:
+            return "Right"
+    
+    def collision(self):
+        self.enableGravity = True
+        for rect in self.groundList:
             # print("trying to check ", [line[0]-self.scrollX, line[1]], [line[2]-self.scrollX, line[3]])
-            if self.collisionB([line[0]-self.scrollX, line[1]], [line[2]-self.scrollX, line[3]], [self.manCX-self.manScrollX, self.manCY+self.gravity], 8):
-                self.manState = 0
-                return
-        self.manState = 1
+            ret = self.collisionRectRect(rect,
+             [self.manCX -self.manWidth/2, self.manCY - self.manHeight/2, 
+             self.manCX +self.manWidth/2, self.manCY + self.manHeight/2])
 
-    def collisionSide(self):
-        for line in self.groundList:
-            if self.collisionS([line[0]-self.scrollX, line[3]], [line[0]-self.scrollX, line[1]], [self.manCX-self.manScrollX, self.manCY+self.gravity], 8):
-                self.manCollisionSide = True
-                return True
-        self.manScrollX = 0
-        self.manCollisionSide = False
-        return False
+            if ret == "Upper":
+                self.manCY = rect[1] - self.manHeight/2
+                if self.speedY > 0:
+                    self.speedY = 0
+                self.enableGravity = False
+                return
+            elif ret == "Left":
+                self.manCX = rect[0] - self.manWidth/2
+                return
+            elif ret == "Right":
+                self.manCX = rect[2] - self.manWidth/2
+                return 
+
+
+
+
+
+    # def collisionBottom(self):
+    #     for line in self.groundList:
+    #         # print("trying to check ", [line[0]-self.scrollX, line[1]], [line[2]-self.scrollX, line[3]])
+    #         if self.collisionB([line[0]-self.scrollX, line[1]], [line[2]-self.scrollX, line[3]], [self.manCX-self.manScrollX, self.manCY], 8):
+    #             self.enableGravity = 0
+    #             return
+    #     self.enableGravity = 1
+
+    # def collisionSide(self):
+    #     for line in self.groundList:
+    #         if self.collisionS([line[0]-self.scrollX, line[3]], [line[0]-self.scrollX, line[1]], [self.manCX-self.manScrollX, self.manCY], 8):
+    #             self.manCollisionSide = True
+    #             return True
+    #     self.manScrollX = 0
+    #     self.manCollisionSide = False
+    #     return False
 
 
     def createGround(self, canvas):
@@ -312,23 +349,21 @@ class BicycleMan:
         if self.gameState == "PREPARE":
             #adding initial ground
             self.groundList.append([self.scrollX, self.height * 7/10, self.scrollX + 100, self.height, "#273622"])
-            self.upperList.append([self.scrollX, self.height * 7/10, self.scrollX + 100, self.height * 7/10, "#273622"])
-
-            start = self.width+self.scrollX+1
+           
+            gStart = 0
             for i in range(self.numOfGround):
-                gStart = random.randint(self.scrollX + 100, self.scrollX*2)
-                gWidth = random.randint(0, 50)
+                gWidth = random.randint(50, 100)
                 gHeight = random.randint(10, 200)
                 colors = ["#273622"]
                 # "#3A322B"
                 # "#2C523C"
                 # "#595E3C"
                 color = random.choice(colors)
-                if gStart <= start:
-                     start = gStart
+
                 self.groundList.append([gStart, self.height-gHeight, gStart+gWidth, self.height, color])
-                self.upperList.append([gStart, self.height-gHeight, gStart+gWidth, self.height-gHeight, color])
-            self.startPoint = start
+                
+
+                gStart += gWidth + random.randint(10, 40)
 
             self.gameState = "READY"
 
@@ -344,16 +379,13 @@ class BicycleMan:
             for coord in self.groundList:
                 canvas.create_rectangle(coord[0]-self.scrollX, coord[1], coord[2]-self.scrollX, coord[3], fill=coord[4], outline =coord[4])
 
-    def jump(self, duration):
-        if self.isManJumping:
-            if self.jumpingTime < duration:
-                self.jumpingTime += 1
-            else:
-                self.isManJumping = False
-                self.jumpingTime = 0
+    def jump(self):
+        self.speedY -= 20
 
     def isGameOver(self):
-        if self.manCY+self.gravity > self.height or self.manCX - self.manScrollX< 0:
+        if self.manCY > self.height or self.manCX - self.scrollX< 0:
+            print(self.scrollX)
+            print((self.manCX, self.manCY))
             self.gameState = "GAMEOVER"
             if self.bestMeter < self.meterCount:
                 self.bestMeter = self.meterCount
