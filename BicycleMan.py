@@ -44,8 +44,8 @@ class BicycleMan:
         self.manWidth =  WIDTH/100 * math.cos(math.pi*1.83+self.manAngle) + WIDTH/200  -(WIDTH/100 * math.cos(math.pi*1.16+self.manAngle) + WIDTH/200)
         self.manHeight = 20
 
-        self.gameState = "START_SCREEN_1"
-        self.enableGravity = True
+        self.gameState = "START_SCREEN"
+        self.enableGravity = False
 
         self.gStart = self.manCX - 50
 
@@ -84,8 +84,10 @@ class BicycleMan:
         self.isModeOptionOpen = False
         self.isModeSelected = True
 
+        self.isHelpWindowOpen = False
+
         self.level = 1 #[1, 2, 3]
-        self.playMode = "Single play"
+        self.playMode = "Single Play"
 
     
         pass
@@ -107,55 +109,74 @@ class BicycleMan:
         self.speedY = 0
 
 
+
+
     def mousePressed(self, event):
-        if self.gameState == "START_SCREEN_1":
-            if(event.x >= WIDTH/2-100 and event.x <= WIDTH/2+100) and (event.y >= HEIGHT/2+100 and event.y <= HEIGHT/2+150):
-                self.gameState = "START_SCREEN_2"
-            elif(event.x >= WIDTH/7-50 and event.x <=  WIDTH/7+50) and (event.y >= HEIGHT/7-10 and event.y <= HEIGHT/7+10):
-                self.gameState = "HELP"
+        if self.gameState == "START_SCREEN":
+            if self.isHelpWindowOpen == False:
+                if(event.x >= WIDTH/2-100 and event.x <= WIDTH/2+100) and (event.y >= HEIGHT/2+100 and event.y <= HEIGHT/2+150):
+                    self.gameState = "READY"
+                    self.enableGravity = True
 
-        if self.gameState == "START_SCREEN_2":
-            #if user clicks "Choose level" button 
-            if(event.x >= WIDTH/3-150 and event.x <= WIDTH/3+150) and (event.y >= HEIGHT/4-20 and event.y <= HEIGHT/4+20):
-                self.isLevelOptionOpen = True
-                self.isLevelSelected = False
 
-            #if user clicks "Choose mode" button 
-            if(event.x >= WIDTH/3-150 and event.x <= WIDTH/3+150) and (event.y >= HEIGHT/2-20 and event.y <= HEIGHT/2+20):
-                self.isModeOptionOpen = True
-                self.isModeSelected = False
+                elif(event.x >= WIDTH*6/7-41 and event.x <= WIDTH*6/7+41) and (event.y >= HEIGHT/7-8 and event.y <= HEIGHT/7+8):
+                    self.gameState = "SETTING"
 
-            if self.isLevelSelected == False:
+                elif(event.x >= WIDTH/7-24 and event.x <= WIDTH/7+24) and (event.y >= HEIGHT/7-8 and event.y <= HEIGHT/7+8):
+                    # canvas.create_rectangle(WIDTH/7-24, HEIGHT/7-8, WIDTH/7+24, HEIGHT/7+8,fill ="blue",activefill="#c06762", width = 0)
+                    self.isHelpWindowOpen = True
+            else:
+                if(event.x >= WIDTH/2-185 and event.x <= WIDTH/2-165) and (event.y >= HEIGHT/7+15 and event.y <= HEIGHT/7+35):
+                    self.isHelpWindowOpen = False
+
+     
+
+        if self.gameState == "SETTING":
+            if self.isLevelSelected:
+                #if user clicks level button 
+                if(event.x >= WIDTH/4+150 and event.x <= WIDTH/4+450) and (event.y >= HEIGHT/3-20 and event.y <= HEIGHT/3+20):
+                    self.isLevelOptionOpen = True
+                    self.isLevelSelected = False
+
+            else:
             #if user clicks "level1" button 
-                if(event.x >= WIDTH/3+150 and event.x <= WIDTH/3+450) and (event.y >= HEIGHT/4-20 and event.y <= HEIGHT/4+20):
+                if(event.x >= WIDTH/4+150 and event.x <= WIDTH/4+450) and (event.y >= HEIGHT/3-20 and event.y <= HEIGHT/3+20):
                     self.level = 1
                     self.isLevelSelected = True
 
                 #if user clicks "level2" button 
-                elif(event.x >= WIDTH/3+150 and event.x <= WIDTH/3+450) and (event.y >= HEIGHT/4+20 and event.y <= HEIGHT/4+60):
+                elif(event.x >= WIDTH/4+150 and event.x <= WIDTH/4+450) and (event.y >= HEIGHT/3+20 and event.y <= HEIGHT/3+60):
                     self.level = 2
                     self.isLevelSelected = True
 
                 #if user clicks "level3" button
-                elif(event.x >= WIDTH/3+150 and event.x <= WIDTH/3+450) and (event.y >= HEIGHT/4+60 and event.y <= HEIGHT/4+100):
+                elif(event.x >= WIDTH/4+150 and event.x <= WIDTH/4+450) and (event.y >= HEIGHT/3+60 and event.y <= HEIGHT/3+100):
                     self.level = 3
                     self.isLevelSelected = True
 
+            #if user clicks mode button 
+            if self.isModeSelected :
+                if(event.x >= WIDTH/4+150 and event.x <= WIDTH/4+450) and (event.y >= HEIGHT*2/3-20 and event.y <= HEIGHT*2/3+20):
+                    self.isModeOptionOpen = True
+                    self.isModeSelected = False
+
              
-            if self.isModeSelected == False:
+            else:
                 #if user clicks "Single play" button 
-                if(event.x >= WIDTH/3+150 and event.x <= WIDTH/3+450) and (event.y >= HEIGHT/2-20 and event.y <= HEIGHT/2+20):
+                if(event.x >= WIDTH/4+150 and event.x <= WIDTH/4+450) and (event.y >= HEIGHT*2/3-20 and event.y <= HEIGHT*2/3+20):
                     self.playMode = "Single Play"
                     self.isModeSelected = True
                 
                 #if user clicks "Double play" button
-                elif(event.x >= WIDTH/3+150 and event.x <= WIDTH/3+450) and (event.y >= HEIGHT/2+20 and event.y <= HEIGHT/2+60):
+                elif(event.x >= WIDTH/4+150 and event.x <= WIDTH/4+450) and (event.y >= HEIGHT*2/3+20 and event.y <= HEIGHT*2/3+60):
                     self.playMode = "Double Play"
                     self.isModeSelected = True
+                    
+            #if user clicks "press to start"
+            if(event.x >= WIDTH/2-45 and event.x <= WIDTH/2+50) and (event.y >= HEIGHT*9/10-10 and event.y <= HEIGHT*9/10+10):
+                self.gameState = "START_SCREEN"
+            pass
 
-
-
-        pass
 
 
     def keyPressed(self, event):
@@ -164,19 +185,6 @@ class BicycleMan:
 
         if (event.keysym == "s") and self.gameState == "READY":
             self.gameState = "PLAYING"
-
-        if self.gameState == "READY" and event.keysym == "1":
-            self.level = 1
-            print(self.level)
-
-        if self.gameState == "READY" and event.keysym == "2":
-            self.level = 2
-            print(self.level)
-
-        if self.gameState == "READY" and event.keysym == "3":
-            self.level = 3
-            print(self.level)
-
 
         if (self.enableGravity == False  or self.jumpCount > 0) and (event.keysym == "Up"):
             self.jumpCount -= 1
@@ -234,24 +242,21 @@ class BicycleMan:
         self.drawFuji(canvas)
         self.drawCloud(canvas)
         self.drawBamboo(canvas)
-
         self.drawStart(canvas)
         self.drawGround(canvas)
-        # self.deleteGround(canvas)
         self.drawMan(canvas)
         self.isGameOver()
         self.drawGameOver(canvas)
         self.drawMeterCount(canvas)
         self.createGround()
-        self.drawStartScreen1(canvas)
-        self.drawStartScreen2(canvas)
+        self.drawStartScreen(canvas)
+        self.drawSettingScreen(canvas)
+        self.drawHelpWindow(canvas)
 
         pass
 
 
     def man(self, canvas, cx, cy):
-        # r = WIDTH/1000
-        # canvas.create_oval(cx-r, cy-r, cx+r, cy+r, fill="blue")
         headCX = cx + WIDTH/75 * math.cos(math.pi/3+self.manAngle)
         headCY = cy - WIDTH/75 * math.sin(math.pi/3+self.manAngle)
         headR = WIDTH/200
@@ -297,63 +302,97 @@ class BicycleMan:
     def drawMan(self, canvas):
         if self.gameState == "READY" or self.gameState == "PLAYING":
             self.man(canvas, self.manCX-self.scrollX, self.manCY)
-        if self.gameState == "START_SCREEN_1":
+        elif self.gameState == "START_SCREEN":
             self.man(canvas, self.sunCX, self.sunCY-self.sunR-7)
 
-    def drawStartScreen1(self,canvas):
-        if self.gameState == "START_SCREEN_1":
+    def drawStartScreen(self,canvas):
+        if self.gameState == "START_SCREEN":
             titleFont = tkinter.font.Font(family = "Optima Extrablack", size = 120)
-            buttonFont = tkinter.font.Font(family = "Optima", size = 15)
+            headingFont = tkinter.font.Font(family = "Optima Bold", size = 25)
+            buttonFont = tkinter.font.Font(family = "Optima Bold", size = 20)
             canvas.create_text(WIDTH/2, HEIGHT/2-30, text="BIKE MAN", font=titleFont, fill="black")
             canvas.create_rectangle(WIDTH/2-100, HEIGHT/2+100, WIDTH/2+100, HEIGHT/2+150,fill ="#273622",activefill="#32462c", width = 0)
-            canvas.create_text(WIDTH/2,HEIGHT/2+125, text="PLESS TO START",fill = "white", font=buttonFont)
-            canvas.create_rectangle(WIDTH/7-50, HEIGHT/7-10, WIDTH/7+50, HEIGHT/7+10,fill ="#ba5954",activefill="#c06762", width = 0)
-            canvas.create_text(WIDTH/7,HEIGHT/7, text="HELP",fill = "white", font=buttonFont)
+            canvas.create_text(WIDTH/2,HEIGHT/2+125, text="PRESS TO START",fill = "white", font=buttonFont)
+            # canvas.create_rectangle(WIDTH/7-24, HEIGHT/7-8, WIDTH/7+24, HEIGHT/7+8,fill ="blue",activefill="#c06762", width = 0)
+            canvas.create_text(WIDTH/7,HEIGHT/7, text="HELP",fill = "#e03753", font=headingFont,activefill="#e86a7f")
+            # canvas.create_rectangle(WIDTH*6/7-41, HEIGHT/7-8, WIDTH*6/7+41, HEIGHT/7+8,fill ="blue",activefill="#c06762", width = 0)
+            canvas.create_text(WIDTH*6/7,HEIGHT/7, text="SETTING",fill = "#e03753", font=headingFont,activefill="#e86a7f")
 
-    def drawStartScreen2(self, canvas):
-        if self.gameState == "START_SCREEN_2":
-            settingFont = tkinter.font.Font(family = "Optima Extrablack", size = 30)
-            chooseLevelFont = tkinter.font.Font(family = "Optima Bold", size = 20)
-            optionFont = tkinter.font.Font(family = "Optima Bold", size = 20)
+    def drawSettingScreen(self, canvas):
+        if self.gameState == "SETTING":
+            headingFont = tkinter.font.Font(family = "Optima Extrablack", size = 30)
+            paragraphFont = tkinter.font.Font(family = "Optima Bold", size = 25)
+            optionFont = tkinter.font.Font(family = "Optima Bold", size = 25)
             canvas.create_rectangle(0,0,WIDTH, HEIGHT, fill="#B8B694")
-            canvas.create_text(WIDTH/2, HEIGHT/10, text="Settings", font=settingFont)
-            canvas.create_rectangle(WIDTH/3-150, HEIGHT/4-20, WIDTH/3+150, HEIGHT/4+20, fill ="#e7d541", width = 0, activefill ="#ebdd64")
-            canvas.create_text(WIDTH/3, HEIGHT/4, text="Choose level", font=chooseLevelFont)
-            canvas.create_rectangle(WIDTH/3-150, HEIGHT/2-20, WIDTH/3+150, HEIGHT/2+20, fill ="#e7d541", width = 0, activefill ="#ebdd64")
-            canvas.create_text(WIDTH/3, HEIGHT/2, text="Choose mode", font=chooseLevelFont)
-            canvas.create_rectangle(WIDTH/3-150, HEIGHT*3/4-20, WIDTH/3+150, HEIGHT*3/4+20, fill ="#e7d541", width = 0, activefill ="#ebdd64")
-            canvas.create_text(WIDTH/3, HEIGHT*3/4, text="Choose character", font=chooseLevelFont)
+            canvas.create_text(WIDTH/2, HEIGHT/10, text="Settings", font=headingFont)
+            canvas.create_rectangle(WIDTH/4+120, HEIGHT/3-20, WIDTH/4+150, HEIGHT/3+20, fill ="#e7d541", width = 0)
+            canvas.create_text(WIDTH/4, HEIGHT/3, text="Choose level : ", font=paragraphFont)
+            canvas.create_polygon(WIDTH/4+125, HEIGHT/3-8, WIDTH/4+145, HEIGHT/3-8, WIDTH/4+135, HEIGHT/3+8, fill="white")
+            canvas.create_rectangle(WIDTH/4+120, HEIGHT*2/3-20, WIDTH/4+150, HEIGHT*2/3+20, fill ="#527248", width = 0)
+            canvas.create_text(WIDTH/4, HEIGHT*2/3, text="Choose mode : ", font=paragraphFont)
+            canvas.create_polygon(WIDTH/4+125, HEIGHT*2/3-8, WIDTH/4+145, HEIGHT*2/3-8, WIDTH/4+135, HEIGHT*2/3+8, fill="white")
+            
+            canvas.create_text(WIDTH/2, HEIGHT*9/10, text="HOME",fill ="#273622",activefill="#32462c", font =headingFont)
+            
 
             if self.isLevelOptionOpen:
-                canvas.create_rectangle(WIDTH/3+150, HEIGHT/4-20, WIDTH/3+450, HEIGHT/4+20, fill ="#f0e486", width=0, activefill ="#f6f0ba")
-                canvas.create_text(WIDTH/3+300, HEIGHT/4, text ="level1",font=optionFont)
-                canvas.create_rectangle(WIDTH/3+150, HEIGHT/4+20, WIDTH/3+450, HEIGHT/4+60, fill ="#e9d952", width=0, activefill ="#f6f0ba")
-                canvas.create_text(WIDTH/3+300, HEIGHT/4+40, text ="level2",font=optionFont)
-                canvas.create_rectangle(WIDTH/3+150, HEIGHT/4+60, WIDTH/3+450, HEIGHT/4+100, fill ="#e2ce1e", width=0, activefill ="#f6f0ba")
-                canvas.create_text(WIDTH/3+300, HEIGHT/4+80, text ="level3",font=optionFont)
+                canvas.create_rectangle(WIDTH/4+150, HEIGHT/3-20, WIDTH/4+450, HEIGHT/3+20, fill ="#f0e486", width=0, activefill ="#f6f0ba")
+                canvas.create_text(WIDTH/4+300, HEIGHT/3, text ="level1",font=optionFont)
+                canvas.create_rectangle(WIDTH/4+150, HEIGHT/3+20, WIDTH/4+450, HEIGHT/3+60, fill ="#e9d952", width=0, activefill ="#f6f0ba")
+                canvas.create_text(WIDTH/4+300, HEIGHT/3+40, text ="level2",font=optionFont)
+                canvas.create_rectangle(WIDTH/4+150, HEIGHT/3+60, WIDTH/4+450, HEIGHT/3+100, fill ="#e2ce1e", width=0, activefill ="#f6f0ba")
+                canvas.create_text(WIDTH/4+300, HEIGHT/3+80, text ="level3",font=optionFont)
 
             if self.isLevelSelected:
                 self.isLevelOptionOpen = False
-                canvas.create_rectangle(WIDTH/3+150, HEIGHT/4-20, WIDTH/3+450, HEIGHT/4+20, fill ="#f0e486", width=0)
-                canvas.create_text(WIDTH/3+300, HEIGHT/4, text ="level%d" % (self.level),font=optionFont)
+                canvas.create_rectangle(WIDTH/4+150, HEIGHT/3-20, WIDTH/4+450, HEIGHT/3+20, fill ="#f0e486", width=0, activefill ="#f6f0ba")
+                canvas.create_text(WIDTH/4+300, HEIGHT/3, text ="level%d" % (self.level),font=optionFont)
 
             if self.isModeOptionOpen:
-                canvas.create_rectangle(WIDTH/3+150, HEIGHT/2-20, WIDTH/3+450, HEIGHT/2+20, fill ="#f0e486", width=0, activefill ="#f6f0ba")
-                canvas.create_text(WIDTH/3+300, HEIGHT/2, text ="Single Play",font=optionFont)
-                canvas.create_rectangle(WIDTH/3+150, HEIGHT/2+20, WIDTH/3+450, HEIGHT/2+60, fill ="#e9d952", width=0, activefill ="#f6f0ba")
-                canvas.create_text(WIDTH/3+300, HEIGHT/2+40, text ="Double Play",font=optionFont)
+                canvas.create_rectangle(WIDTH/4+150, HEIGHT*2/3-20, WIDTH/4+450, HEIGHT*2/3+20, fill ="#b8ceb1", width=0, activefill ="#d9e5d5")
+                canvas.create_text(WIDTH/4+300, HEIGHT*2/3, text ="Single Play",font=optionFont)
+                canvas.create_rectangle(WIDTH/4+150, HEIGHT*2/3+20, WIDTH/4+450, HEIGHT*2/3+60, fill ="#8cb081", width=0, activefill ="#d9e5d5")
+                canvas.create_text(WIDTH/4+300, HEIGHT*2/3+40, text ="Double Play",font=optionFont)
 
 
             if self.isModeSelected:
                 self.isModeOptionOpen = False
-                canvas.create_rectangle(WIDTH/3+150, HEIGHT/2-20, WIDTH/3+450, HEIGHT/2+20, fill ="#f0e486", width=0)
-                canvas.create_text(WIDTH/3+300, HEIGHT/2, text ="%s" % (self.playMode),font=optionFont)
+                canvas.create_rectangle(WIDTH/4+150, HEIGHT*2/3-20, WIDTH/4+450, HEIGHT*2/3+20, fill ="#b8ceb1", width=0, activefill ="#d9e5d5")
+                canvas.create_text(WIDTH/4+300, HEIGHT*2/3, text ="%s" % (self.playMode),font=optionFont)
 
+    
 
+    def drawHelpWindow(self, canvas):
+        if self.isHelpWindowOpen:
+            headingFont = tkinter.font.Font(family = "Optima Extrablack", size = 30)
+            paragraphFont = tkinter.font.Font(family = "Optima Extrablack", size = 20)
+            sentenceFont = tkinter.font.Font(family = "Optima Bold", size = 20)
+            self.round_rectangle(canvas, WIDTH/5, HEIGHT/7, WIDTH*4/5, HEIGHT*6/7, radius=25, fill="#c29297", outline="#a65f67", width=7)
+            canvas.create_text(WIDTH/2, HEIGHT/7+25, text ="User Guide", font = headingFont)
+            canvas.create_text(WIDTH/2-95, HEIGHT/7+75, text ="Single Play mode:", font = paragraphFont)
+            canvas.create_text(WIDTH/2-80, HEIGHT/7+115, text ="Press “Up” key to jump", font = sentenceFont)
+            canvas.create_text(WIDTH/2-95, HEIGHT/7+175, text ="Double Play mode:", font = paragraphFont)
+            canvas.create_text(WIDTH/2-43, HEIGHT/7+215, text ="Player1 - Press “Up” key to jump", font = sentenceFont)
+            canvas.create_text(WIDTH/2-50, HEIGHT/7+255, text ="Player2 - Press “E” key to jump", font = sentenceFont)
+            self.drawCloseButton(canvas, WIDTH/2-175, HEIGHT/7+25, 10, "#e5d1d3","#f3eaeb","#aea5a8")
 
+    def drawCloseButton(self, canvas, x, y, size, backColor, activeColor, xColor):
+        canvas.create_rectangle(x-size, y-size, x+size, y+size, fill=backColor, activefill=activeColor, width=0)
+        left_x1 =x-size+1
+        left_x2 =x+size-1
+        left_y1 = y-size+1
+        left_y2 = y+size-1
+        right_x1 = x+size-1
+        right_x2 = x-size+1
+        right_y1 = y-size+1
+        right_y2 = y+size-1
+        canvas.create_line(left_x1, left_y1, left_x2, left_y2, fill=xColor, width=4)
+        canvas.create_line(right_x1, right_y1, right_x2, right_y2, fill=xColor, width=4)
+
+        
     def drawStart(self, canvas):
         if self.gameState == "READY":
-            canvas.create_text(WIDTH/2, HEIGHT/2-50, text="BIKE MAN", font="Times 56", fill="black")
+            # canvas.create_text(WIDTH/2, HEIGHT/2-50, text="BIKE MAN", font="Times 56", fill="black")
             canvas.create_text(WIDTH/2, HEIGHT/2, text="press s to start", font="Times 35", fill="black")
 
     def drawMeterCount(self, canvas):
@@ -387,30 +426,29 @@ class BicycleMan:
             return "Right"
     
     def collision(self):
-        self.enableGravity = True
-        for rect in self.groundList:
-            # print("trying to check ", [line[0]-self.scrollX, line[1]], [line[2]-self.scrollX, line[3]])
-            ret = self.collisionRectRect(rect,
-             [self.manCX -self.manWidth/2, self.manCY - self.manHeight/2, 
-             self.manCX +self.manWidth/2, self.manCY + self.manHeight/2])
+        if self.gameState == "READY" or self.gameState == "PLAYING":
+            self.enableGravity = True
+            for rect in self.groundList:
+                # print("trying to check ", [line[0]-self.scrollX, line[1]], [line[2]-self.scrollX, line[3]])
+                ret = self.collisionRectRect(rect,
+                 [self.manCX -self.manWidth/2, self.manCY - self.manHeight/2, 
+                 self.manCX +self.manWidth/2, self.manCY + self.manHeight/2])
 
-            if ret == "Upper":
-                self.manCY = rect[1] - self.manHeight/2
-                if self.speedY > 0:
-                    self.speedY = 0
-                self.enableGravity = False
-                return
-            elif ret == "Left":
-                self.manCX = rect[0] - self.manWidth/2
-                return
-            elif ret == "Right":
-                self.manCX = rect[2] - self.manWidth/2
-                return 
+                if ret == "Upper":
+                    self.manCY = rect[1] - self.manHeight/2
+                    if self.speedY > 0:
+                        self.speedY = 0
+                    self.enableGravity = False
+                    return
+                elif ret == "Left":
+                    self.manCX = rect[0] - self.manWidth/2
+                    return
+                elif ret == "Right":
+                    self.manCX = rect[2] - self.manWidth/2
+                    return 
 
     def createGround(self):
         if self.gameState == "READY" or self.gameState == "PLAYING":
-        # cStartPoint = WIDTH+1
-            #adding initial ground
 
             while(self.gStart < self.scrollX + WIDTH):
                 
@@ -418,9 +456,6 @@ class BicycleMan:
                     gWidth = random.randint(GROUND_WIDTH_MIN_MODE1, GROUND_WIDTH_MAX_MODE1)
                     gHeight = random.randint(GROUND_HEIGHT_MIN_MODE1, GROUND_HEIGHT_MAX_MODE1)
                     colors = ["#273622"]
-                    # "#3A322B"
-                    # "#2C523C"
-                    # "#595E3C"
                     color = random.choice(colors)
                     self.groundList.append([self.gStart, HEIGHT-gHeight, self.gStart+gWidth, HEIGHT, color])
                     self.gStart += gWidth + random.randint(GROUND_MERGIN_MIN_MODE1, GROUND_MERGIN_MAX_MODE1)
@@ -430,9 +465,6 @@ class BicycleMan:
                     gWidth = random.randint(GROUND_WIDTH_MIN_MODE2, GROUND_WIDTH_MAX_MODE2)
                     gHeight = random.randint(GROUND_HEIGHT_MIN_MODE2, GROUND_HEIGHT_MAX_MODE2)
                     colors = ["#bf7a4a"]
-                    # "#3A322B"
-                    # "#2C523C"
-                    # "#595E3C"
                     color = random.choice(colors)
                     self.groundList.append([self.gStart, HEIGHT-gHeight, self.gStart+gWidth, HEIGHT, color])
                     self.gStart += gWidth + random.randint(GROUND_MERGIN_MIN_MODE2, GROUND_MERGIN_MAX_MODE2)
@@ -442,9 +474,6 @@ class BicycleMan:
                     gWidth = random.randint(GROUND_WIDTH_MIN_MODE3, GROUND_WIDTH_MAX_MODE3)
                     gHeight = random.randint(GROUND_HEIGHT_MIN_MODE3, GROUND_HEIGHT_MAX_MODE3)
                     colors = ["#bf4a55"]
-                    # "#3A322B"
-                    # "#2C523C"
-                    # "#595E3C"
                     color = random.choice(colors)
                     self.groundList.append([self.gStart, HEIGHT-gHeight, self.gStart+gWidth, HEIGHT, color])
                     self.gStart += gWidth + random.randint(GROUND_MERGIN_MIN_MODE3, GROUND_MERGIN_MAX_MODE3)
@@ -483,11 +512,35 @@ class BicycleMan:
                 canvas.create_text(WIDTH/2, HEIGHT/2-120, text="score", fill = "white", font="Times 40 italic")
             canvas.create_text(WIDTH/2, HEIGHT/2-80, text="%dm" % self.meterCount, fill = "white", font="Times 30 italic")
 
+    #CITATION: I got the tkinter drawing funtions from https://stackoverflow.com/questions/44099594/how-to-make-a-tkinter-canvas-rectangle-with-rounded-corners
+    def round_rectangle(self, canvas, x1, y1, x2, y2, radius=25, **kwargs):
+        points = [x1+radius, y1,
+                  x1+radius, y1,
+                  x2-radius, y1,
+                  x2-radius, y1,
+                  x2, y1,
+                  x2, y1+radius,
+                  x2, y1+radius,
+                  x2, y2-radius,
+                  x2, y2-radius,
+                  x2, y2,
+                  x2-radius, y2,
+                  x2-radius, y2,
+                  x1+radius, y2,
+                  x1+radius, y2,
+                  x1, y2,
+                  x1, y2-radius,
+                  x1, y2-radius,
+                  x1, y1+radius,
+                  x1, y1+radius,
+                  x1, y1]
+        return canvas.create_polygon(points, **kwargs, smooth=True)
+
     def drawSun(self,canvas):
         canvas.create_oval(self.sunCX-self.sunR, self.sunCY-self.sunR,self.sunCX+self.sunR, self.sunCY+self.sunR, fill="#F22547",width=0)
     
     def drawBackground(self, canvas):
-            canvas.create_rectangle(0, 0, WIDTH, HEIGHT,fill="#EDEACC", width=0)
+        canvas.create_rectangle(0, 0, WIDTH, HEIGHT,fill="#EDEACC", width=0)
     
     def drawFuji(self, canvas):
         g1 = (self.sunCX-WIDTH/3, HEIGHT)
@@ -519,7 +572,6 @@ class BicycleMan:
     def cloud(self, canvas, x, y):
         canvas.create_oval(x-WIDTH/25*5/3, y-HEIGHT/300*5/3, x+WIDTH/60*5/3, y+HEIGHT/50*5/3,fill="#FFFFFF", width = 0)
         canvas.create_oval(x-WIDTH/60*5/3, y-HEIGHT/50*5/3, x+WIDTH/25*5/3, y+HEIGHT/300*5/3,fill="#FFFFFF", width = 0)
-        # canvas.create_oval(x-WIDTH/20, y-HEIGHT/20, x+WIDTH/10, y+HEIGHT/20,fill="#FFFFFF", width = 0)
 
     def drawCloud(self, canvas):
         self.cloud(canvas, self.c1x, HEIGHT * 2/5)
@@ -547,14 +599,6 @@ class BicycleMan:
             self.bamboo(canvas, WIDTH*38/40, HEIGHT, HEIGHT*(2/3)*(1/4) ,math.pi/2*7/6, 5)
             self.bamboo(canvas, WIDTH*34/40, HEIGHT, HEIGHT*(2/3)*(1/4) ,math.pi/2*11/10, 7)
             
-    def putCloud(self, canvas):
-        gif1 = PhotoImage(master=canvas, file="cloud_03.gif")
-        label = Label(image=gif1)
-        label.image = gif1 # keep a reference!
-        label.pack()
-        canvas.create_image(WIDTH/2,HEIGHT/2, image = gif1)
-
-
     def cherry(self, canvas, x, y):
         color = "#FCD3DC"
         r = WIDTH/30
