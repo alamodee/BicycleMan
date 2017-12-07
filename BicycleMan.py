@@ -13,7 +13,7 @@ INIT_X_DOUBLE_1 = 50
 INIT_Y_DOUBLE_1= 100
 INIT_X_DOUBLE_2 = 50
 INIT_Y_DOUBLE_2= 415
-GRAVITY = 1
+GRAVITY = 0.8
 JUMP_ACCEL = 15
 GROUND_WIDTH_MIN_MODE1 = 100
 GROUND_WIDTH_MAX_MODE1 = 200
@@ -33,7 +33,7 @@ GROUND_HEIGHT_MIN_MODE3 = 10
 GROUND_HEIGHT_MAX_MODE3 = 200
 GROUND_MERGIN_MIN_MODE3= 40
 GROUND_MERGIN_MAX_MODE3 = 50
-SCROLL_SPEED = 10
+SCROLL_SPEED = 8
 MAX_JUMP_COUNT = 2
 CHOICE_HEIGHT = 60
 
@@ -48,7 +48,7 @@ class BicycleMan:
         self.manCY = INIT_Y
         
         self.manWidth =  WIDTH/100 * math.cos(math.pi*1.83+self.manAngle) + WIDTH/200  -(WIDTH/100 * math.cos(math.pi*1.16+self.manAngle) + WIDTH/200)
-        self.manHeight =  - WIDTH/100 * math.sin(math.pi*1.83+self.manAngle) + WIDTH/200 -(- WIDTH/75 *  math.sin(math.pi/3+self.manAngle) + WIDTH/200)
+        self.manHeight =  - WIDTH/100 * math.sin(math.pi*1.83+self.manAngle) + WIDTH/200 -(- WIDTH/75 *  math.sin(math.pi/3+self.manAngle) + WIDTH/200)-1
         self.gameState = "START_SCREEN"
         self.isUpperGameOver = False
         self.isLowerGameOver = False
@@ -105,9 +105,9 @@ class BicycleMan:
         self.manCX2 = INIT_X_DOUBLE_2
         self.manCY2 = INIT_Y_DOUBLE_2
         self.startCount = 4
+        self.winner = "N/A"
 
-    
-        pass
+
 
     def prepare(self):
         self.manAngle = 0
@@ -136,12 +136,13 @@ class BicycleMan:
         self.jumpCount = 0
         self.jumpCount2 = 0
 
-        if self.playMode == "Double Play":
+        if self.playMode == "Single Play":
             self.manCX = INIT_X_DOUBLE_1
             self.manCY = INIT_Y_DOUBLE_1
         self.manCX2 = INIT_X_DOUBLE_2
         self.manCY2 = INIT_Y_DOUBLE_2
 
+        self.winner = "N/A"
 
 
     def mousePressed(self, event ,canvas):
@@ -153,9 +154,9 @@ class BicycleMan:
                     self.prepare()
                     self.gameState = "READY"
                     self.enableGravity = True
-                #if user clicks "Setting" button
+                #if user clicks "Settings" button
                 elif(event.x >= WIDTH*6/7-75 and event.x <= WIDTH*6/7+75) and (event.y >= HEIGHT/7-15 and event.y <= HEIGHT/7+15):
-                    self.gameState = "SETTING"
+                    self.gameState = "SETTINGS"
                 #if user clicks "Help" button
                 elif(event.x >= WIDTH/7-40 and event.x <= WIDTH/7+43) and (event.y >= HEIGHT/7-15 and event.y <= HEIGHT/7+15):
                     # canvas.create_rectangle(WIDTH/7-24, HEIGHT/7-8, WIDTH/7+24, HEIGHT/7+8,fill ="blue",activefill="#c06762", width = 0)
@@ -166,8 +167,8 @@ class BicycleMan:
                 if(event.x >= WIDTH/2-285 and event.x <= WIDTH/2-265) and (event.y >= HEIGHT/7+20 and event.y <= HEIGHT/7+40):
                     self.isHelpWindowOpen = False   
 
-        #setting screen
-        if self.gameState == "SETTING":
+        #settings screen
+        if self.gameState == "SETTINGS":
             if self.isLevelSelected:
                 #if user clicks level button 
                 if(event.x >= WIDTH/4+150 and event.x <= WIDTH/4+450) and (event.y >= HEIGHT/3-20 and event.y <= HEIGHT/3+20):
@@ -221,7 +222,7 @@ class BicycleMan:
             #if user clicks "Home" button              
             if (event.x >= WIDTH/6-43 and event.x <= WIDTH/6+40) and (event.y >= HEIGHT/6-15 and event.y <= HEIGHT/6+13):
                 self.gameState = "START_SCREEN"
-            pass
+
 
 
     def keyPressed(self, event):
@@ -240,17 +241,17 @@ class BicycleMan:
             if (self.enableGravity2 == False  or self.jumpCount2 > 0) and (event.keysym == "Up"):
                 self.jump2()
 
-        pass
-
 
     def timerFired(self, canvas):
         if self.playMode == "Single Play":
+            self.manCY += self.speedY
+            self.collision()
+
             if self.enableGravity:
                 self.speedY += GRAVITY
             else:
                 self.jumpCount = MAX_JUMP_COUNT
 
-            self.manCY += self.speedY
             
             if self.gameState == "PLAYING":
                 self.meterCount += 1
@@ -258,8 +259,12 @@ class BicycleMan:
 
             self.lightStart += 0.25
 
-
         elif self.playMode == "Double Play":
+            self.manCY += self.speedY
+            self.manCY2 += self.speedY2
+            self.collision()
+            self.collision2()
+
             if self.enableGravity:
                 self.speedY += GRAVITY
             else:
@@ -269,9 +274,6 @@ class BicycleMan:
                 self.speedY2 += GRAVITY   
             else:
                 self.jumpCount2 = MAX_JUMP_COUNT
-
-            self.manCY += self.speedY
-            self.manCY2 += self.speedY2
 
             if self.gameState == "PLAYING":
                 self.manCX += SCROLL_SPEED
@@ -302,15 +304,29 @@ class BicycleMan:
             self.c3x += self.moveCloud3
 
         if self.manCX - self.scrollX < 50:
-                self.manCX += 1
+            self.manCX += 1
 
         if self.manCX2 - self.scrollX < 50:
-                self.manCX2 += 1
+            self.manCX2 += 1
 
         if self.manCX2 - self.scrollX > 50:
-                self.manCX2 -= 1
+            self.manCX2 -= 1
+
+        if self.speedY >20:
+            self.speedY = 20
+
+        if self.speedY2 >20:
+            self.speedY2 = 20
+
+        if ((self.manCY - self.manHeight) < 0):
+            self.manCY  = self.manHeight
+
+        if ((self.manCY2 - self.manHeight) < HEIGHT/2):
+            self.manCY2  = HEIGHT/2 + self.manHeight
 
     def redrawAll(self, canvas):
+        self.collision()
+        self.collision2()
         self.drawBackground(canvas)
         self.drawLight(canvas)
         self.drawBackgroundMountain(canvas)
@@ -319,22 +335,15 @@ class BicycleMan:
         self.drawCloud(canvas)
         self.drawBamboo(canvas)
         self.drawGround(canvas)
+        self.drawMan(canvas)
         self.isGameOver()
         self.drawGameOver(canvas)
         self.drawMeterCount(canvas)
         self.createGround()
         self.drawStartScreen(canvas)
-        self.drawSettingScreen(canvas)
+        self.drawSettingsScreen(canvas)
         self.drawHelpWindow(canvas)
-        self.drawSeparator(canvas)
         self.startTriger()
-        self.collision()
-        self.collision2()
-        self.drawMan(canvas)
-        # print(self.enableGravity)
-        # print(self.jumpCount)
-        # print(self.enableGravity)
-        print(self.gameState)
 
 
     def startTriger(self):
@@ -396,7 +405,11 @@ class BicycleMan:
                     if not self.isLowerGameOver:
                         self.man(canvas, self.manCX2-self.scrollX, self.manCY2)
         elif self.gameState == "START_SCREEN":
-            self.man(canvas, self.sunCX, self.sunCY-self.sunR-10)
+            if self.playMode == "Single Play":
+                self.man(canvas, self.sunCX, self.sunCY-self.sunR-10)
+            elif self.playMode == "Double Play":
+                self.man(canvas, WIDTH/2-350, HEIGHT/2-92)
+                self.man(canvas, WIDTH/2-45, HEIGHT/2)
 
 
     def jump(self):
@@ -420,10 +433,10 @@ class BicycleMan:
             # canvas.create_rectangle(WIDTH/7-40, HEIGHT/7-15, WIDTH/7+43, HEIGHT/7+15,fill ="blue",activefill="#c06762", width = 0)
             canvas.create_text(WIDTH/7,HEIGHT/7, text="HELP",fill = "#e03753", font=headingFont,activefill="#e86a7f")
             # canvas.create_rectangle(WIDTH*6/7-75, HEIGHT/7-15, WIDTH*6/7+75, HEIGHT/7+15,fill ="blue",activefill="#c06762", width = 0)
-            canvas.create_text(WIDTH*6/7,HEIGHT/7, text="SETTING",fill = "#e03753", font=headingFont,activefill="#e86a7f")
+            canvas.create_text(WIDTH*6/7,HEIGHT/7, text="SETTINGS",fill = "#e03753", font=headingFont,activefill="#e86a7f")
 
-    def drawSettingScreen(self, canvas):
-        if self.gameState == "SETTING":
+    def drawSettingsScreen(self, canvas):
+        if self.gameState == "SETTINGS":
             headingFont = tkinter.font.Font(family = "Optima Extrablack", size = 45)
             paragraphFont = tkinter.font.Font(family = "Optima Bold", size = 30)
             optionFont = tkinter.font.Font(family = "Optima Bold", size = 30)
@@ -477,8 +490,10 @@ class BicycleMan:
             canvas.create_text(WIDTH/2-100, HEIGHT/7+75, text ="Single Play mode:", font = paragraphFont)
             canvas.create_text(WIDTH/2-85, HEIGHT/7+115, text ="Press “Up” key to jump", font = sentenceFont)
             canvas.create_text(WIDTH/2-100, HEIGHT/7+200, text ="Double Play mode:", font = paragraphFont)
-            canvas.create_text(WIDTH/2+5, HEIGHT/7+240, text ="Player1(upper) - Press “Up” key to jump", font = sentenceFont)
-            canvas.create_text(WIDTH/2-4, HEIGHT/7+280, text ="Player2(lower) - Press “E” key to jump", font = sentenceFont)
+            canvas.create_text(WIDTH/2, HEIGHT/7+240, text ="Player1(upper) - Press “E” key to jump", font = sentenceFont)
+            canvas.create_text(WIDTH/2+10, HEIGHT/7+280, text ="Player2(lower) - Press “Up” key to jump", font = sentenceFont)
+            canvas.create_text(WIDTH/2-60, HEIGHT/7+380, text ="You can jump only twice", font = paragraphFont)
+
             self.drawCloseButton(canvas, WIDTH/2-275, HEIGHT/7+30, 10, "#e5d1d3","#f3eaeb","#aea5a8")
 
     def drawCloseButton(self, canvas, x, y, size, backColor, activeColor, xColor):
@@ -733,69 +748,64 @@ class BicycleMan:
         elif self.playMode == "Double Play":
             if self.gameState != "PLAYING":
                 return 
-            if self.manCY > HEIGHT/2 or self.manCX - self.scrollX< 0:
+            if self.manCY > HEIGHT/2 or self.manCX - self.scrollX < 0:
                 self.isUpperGameOver = True
-                if self.bestMeter < self.meterCount:
-                    self.bestMeter = self.meterCount
-                    self.isNewHighScore = True
-                else:
-                    self.isNewHighScore = False
-
-            if self.manCY2 > HEIGHT or self.manCX2 - self.scrollX<0:
+                
+            if self.manCY2 > HEIGHT or self.manCX2 - self.scrollX < 0:
                 self.isLowerGameOver = True
 
-                if self.bestMeter < self.meterCount:
-                    self.bestMeter = self.meterCount
-                    self.isNewHighScore = True
-                else:
-                    self.isNewHighScore = False
 
             if self.isUpperGameOver == True and self.isLowerGameOver == True:
                 self.gameState = "GameOver"
+                if self.meterCount > self.meterCount2:
+                    self.winner = "Player1"
+                else:
+                    self.winner = "Player2"
 
             pass
 
     def drawGameOver(self, canvas):
         headingFont = tkinter.font.Font(family = "Optima Extrablack", size = 60)
-        paragraphFont = tkinter.font.Font(family = "Optima Bold", size = 30)
+        paragraphFont = tkinter.font.Font(family = "Optima Bold", size = 45)
         homeFont = tkinter.font.Font(family = "Optima Bold", size = 35)
         if self.playMode == "Single Play":
             if self.gameState == "GameOver":
                 canvas.create_rectangle(0, 0, WIDTH, HEIGHT, fill = "#F22547", width = 0)
                 canvas.create_text(WIDTH/2, HEIGHT/2-10, text="Game over...", fill = "white", font=headingFont)
-                canvas.create_rectangle(WIDTH/2-150,HEIGHT*3.5/5-30, WIDTH/2+150,HEIGHT*3.5/5+30, fill ="#8c836a",outline ="white", activefill ="#a79f8a",width = 3)
+                canvas.create_rectangle(WIDTH/2-200,HEIGHT*3.5/5-25, WIDTH/2+200,HEIGHT*3.5/5+35, fill ="#8c836a",outline ="white", activefill ="#a79f8a",width = 3)
                 canvas.create_text(WIDTH/2, HEIGHT*3.5/5, text="press to start again", fill = "white", font=paragraphFont)
                 canvas.create_text(WIDTH/6, HEIGHT/6, text="home",fill = "#c9c4b7", activefill ="white", font=homeFont)
                 if self.isNewHighScore:
-                    canvas.create_text(WIDTH/2, HEIGHT/2-120, text="NEW HIGH SCORE!", fill = "white", font=paragraphFont)
+                    canvas.create_text(WIDTH/2, HEIGHT/2-150, text="NEW HIGH SCORE!", fill = "white", font=paragraphFont)
                 else:
-                    canvas.create_text(WIDTH/2, HEIGHT/2-120, text="score", fill = "white", font=paragraphFont)
-                canvas.create_text(WIDTH/2, HEIGHT/2-80, text="%dm" % self.meterCount, fill = "white", font=paragraphFont)
+                     canvas.create_text(WIDTH/2, HEIGHT/2-150, text="score", fill = "white", font=paragraphFont)
+                canvas.create_text(WIDTH/2, HEIGHT/2-100, text="%dm" % self.meterCount, fill = "white", font=paragraphFont)
 
         elif self.playMode == "Double Play":
             if self.isUpperGameOver == True and self.isLowerGameOver  == False:
-                print()
                 canvas.create_rectangle(0, 0, WIDTH, HEIGHT/2, fill = "#F22547", width = 0)
-                canvas.create_text(WIDTH/2, HEIGHT/10, text="%dm" % self.meterCount, fill = "white", font="Times 30 italic")
-                canvas.create_text(WIDTH/2, HEIGHT/5+20, text="Game over", fill = "white", font="Times 50 italic")
-                # canvas.create_text(WIDTH/2, HEIGHT/2-20, text="press r to start again", fill = "white", font="Times 30 italic")
+                canvas.create_text(WIDTH/2, HEIGHT/10, text="%dm" % self.meterCount, fill = "white", font=paragraphFont)
+                canvas.create_text(WIDTH/2, HEIGHT/5+20, text="You lost", fill = "white", font=paragraphFont)
                 
-                # if self.isNewHighScore:
-                #     canvas.create_text(WIDTH/2, HEIGHT/2-120, text="NEW HIGH SCORE!", fill = "white", font="Times 30 italic")
-                # else:
-                #     canvas.create_text(WIDTH/2, HEIGHT/2-120, text="score", fill = "white", font="Times 40 italic")
+                
             if self.isLowerGameOver == True and self.isUpperGameOver == False:
                 canvas.create_rectangle(0, HEIGHT/2, WIDTH, HEIGHT, fill = "#F22547", width = 0)
-                canvas.create_text(WIDTH/2, HEIGHT/2+45, text="%dm" % self.meterCount2, fill = "white", font="Times 30 italic")
-                canvas.create_text(WIDTH/2, HEIGHT*4/5-30, text="Game over", fill = "white", font="Times 50 italic")
-                # canvas.create_text(WIDTH/2, HEIGHT*3/2+30, text="press r to start again", fill = "white", font="Times 30 italic")
-                # if self.isNewHighScore:
-                #     canvas.create_text(WIDTH/2, HEIGHT/2-120, text="NEW HIGH SCORE!", fill = "white", font="Times 30 italic")
-                # else:
-                #     canvas.create_text(WIDTH/2, HEIGHT/2-120, text="score", fill = "white", font="Times 40 italic")
-
-            if self.isLowerGameOver and self.isUpperGameOver:
+                canvas.create_text(WIDTH/2, HEIGHT/2+45, text="%dm" % self.meterCount2, fill = "white", font=paragraphFont)
+                canvas.create_text(WIDTH/2, HEIGHT*4/5-30, text="You lost", fill = "white", font=paragraphFont)
+                
+              
+            if self.gameState == "GameOver":
                 canvas.create_rectangle(0, 0, WIDTH, HEIGHT, fill = "#F22547", width = 0)
+                canvas.create_text(WIDTH/2, HEIGHT/2-150, text="score", fill = "white", font=paragraphFont)
+                canvas.create_text(WIDTH/2, HEIGHT/2-10, text="Winner: %s" % self.winner, fill = "white", font=headingFont)
+                canvas.create_rectangle(WIDTH/2-200,HEIGHT*3.5/5-25, WIDTH/2+200,HEIGHT*3.5/5+35, fill ="#8c836a",outline ="white", activefill ="#a79f8a",width = 3)
+                canvas.create_text(WIDTH/2, HEIGHT*3.5/5, text="press to start again", fill = "white", font=paragraphFont)
+                canvas.create_text(WIDTH/6, HEIGHT/6, text="home",fill = "#c9c4b7", activefill ="white", font=homeFont)
+                if self.winner == "Player1":
+                    canvas.create_text(WIDTH/2, HEIGHT/2-100, text="%dm" % self.meterCount, fill = "white", font=paragraphFont)
+                elif self.winner == "Player2":
+                    canvas.create_text(WIDTH/2, HEIGHT/2-100, text="%dm" % self.meterCount2, fill = "white", font=paragraphFont)
+
 
             pass
 
@@ -989,12 +999,7 @@ class BicycleMan:
             s3 = (WIDTH*6/10, HEIGHT*9/10)
             s4 = (WIDTH*8/10, HEIGHT*9/10)
             canvas.create_polygon(s1, s2, s4, s3,fill="#B8B694", width=0)
-
             pass
-
-    def drawSeparator(self, canvas):
-        if self.playMode == "Double Play" and not (self.isLowerGameOver == True and self.isUpperGameOver == True) and (self.gameState != "SETTING"):
-            canvas.create_line(0, HEIGHT/2, WIDTH, HEIGHT/2, width = 3)
 
 
     # CITATION: I got the tkinter drawing funtions from https://www.cs.cmu.edu/~112/notes/notes-graphics.html
@@ -1015,8 +1020,11 @@ class BicycleMan:
             redrawAllWrapper(self, canvas)
     
         def timerFiredWrapper(self, canvas):
-            self.timerFired(canvas)
             redrawAllWrapper(self, canvas)
+            self.timerFired(canvas)
+            
+            
+            
             # pause, then call timerFired again
             canvas.after(self.timerDelay, timerFiredWrapper, self, canvas)
         # Set up data and call init
