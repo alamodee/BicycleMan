@@ -21,25 +21,20 @@ GROUND_HEIGHT_MIN_MODE1 = 10
 GROUND_HEIGHT_MAX_MODE1 = 200
 GROUND_MERGIN_MIN_MODE1= 10
 GROUND_MERGIN_MAX_MODE1 = 40
-GROUND_WIDTH_MIN_MODE2 = 50
-GROUND_WIDTH_MAX_MODE2 = 90
-GROUND_HEIGHT_MIN_MODE2 = 10
-GROUND_HEIGHT_MAX_MODE2 = 200
+GROUND_WIDTH_MIN_MODE2 = 75
+GROUND_WIDTH_MAX_MODE2 = 100
+GROUND_HEIGHT_MIN_MODE2 = 170
+GROUND_HEIGHT_MAX_MODE2 = 270
 GROUND_MERGIN_MIN_MODE2= 30
 GROUND_MERGIN_MAX_MODE2 = 50
-GROUND_WIDTH_MIN_MODE3 = 50
-GROUND_WIDTH_MAX_MODE3 = 80
-GROUND_HEIGHT_MIN_MODE3 = 10
-GROUND_HEIGHT_MAX_MODE3 = 200
-GROUND_MERGIN_MIN_MODE3= 40
-GROUND_MERGIN_MAX_MODE3 = 50
 SCROLL_SPEED = 8
 MAX_JUMP_COUNT = 2
 CHOICE_HEIGHT = 60
 FAN_START_ANGLE = 30
-FAN_FREQUENCY = 3
+FAN_FREQUENCY = 5
 FAN_WIDTH = 73
 FAN_HEIGHT = 30
+FAN_NUM_GOAL = 3
 FAN_R = WIDTH/30
 FLY_DURATION = 1000
 JUMP_UNIT = 5
@@ -105,8 +100,8 @@ class BicycleMan:
         self.isModeSelected = True
         self.isHelpWindowOpen = False
 
-        self.level = 1 #[1, 2, 3]
-        self.playMode = "Double Play"
+        self.level = "Normal"
+        self.playMode = "Single Play"
         if self.playMode == "Double Play":
             self.manCX = INIT_X_DOUBLE_1
             self.manCY = INIT_Y_DOUBLE_1
@@ -207,19 +202,14 @@ class BicycleMan:
                     self.isLevelSelected = False
 
             else:
-            #if user clicks "level1" button 
+            #if user clicks "Normal" button 
                 if(event.x >= WIDTH/4+150 and event.x <= WIDTH/4+450) and (event.y >= HEIGHT/3-20 and event.y <= HEIGHT/3+20):
-                    self.level = 1
+                    self.level = "Normal"
                     self.isLevelSelected = True
 
-                #if user clicks "level2" button 
+                #if user clicks "Hard" button 
                 elif(event.x >= WIDTH/4+150 and event.x <= WIDTH/4+450) and (event.y >= HEIGHT/3+20 and event.y <= HEIGHT/3+60):
-                    self.level = 2
-                    self.isLevelSelected = True
-
-                #if user clicks "level3" button
-                elif(event.x >= WIDTH/4+150 and event.x <= WIDTH/4+450) and (event.y >= HEIGHT/3+60 and event.y <= HEIGHT/3+100):
-                    self.level = 3
+                    self.level = "Hard"
                     self.isLevelSelected = True
 
             #if user clicks mode button 
@@ -261,9 +251,6 @@ class BicycleMan:
         if (event.keysym == "y"):
             self.manAngle += math.pi/18
 
-        if (event.keysym == "s") and self.gameState == "READY":
-            self.gameState = "PLAYING"
-
         if self.playMode == "Single Play":
             if (self.enableGravity == False  or self.jumpCount > 0) and (event.keysym == "Up"):
                 self.jump()
@@ -277,7 +264,10 @@ class BicycleMan:
     def timerFired(self, canvas):
         if self.playMode == "Single Play":
             if self.isFlying:
-                self.manCY = HEIGHT/2
+                if self.level == "Normal":
+                    self.manCY = HEIGHT/2
+                if self.level == "Hard":
+                    self.manCY = HEIGHT/2-100
                 self.meterCount += JUMP_UNIT
                 self.manCX += SCROLL_SPEED * JUMP_UNIT
                 self.scrollX += SCROLL_SPEED * JUMP_UNIT
@@ -287,20 +277,21 @@ class BicycleMan:
             else:
                 self.jumpCount = MAX_JUMP_COUNT
 
-            self.manCY += self.speedY
-            self.collision()
-            self.collisionFan()
-    
             if self.gameState == "PLAYING" and self.isFlying == False:
                 self.meterCount += 1
                 self.manCX += SCROLL_SPEED
                 self.scrollX += SCROLL_SPEED
 
+            self.manCY += self.speedY
+            self.collision()
+            self.collisionFan()
+    
+    
             self.lightStart += 0.25
                 
         elif self.playMode == "Double Play":
             if self.isFlying:
-                self.manCY = HEIGHT/4
+                self.manCY = HEIGHT/4-8
                 self.meterCount += JUMP_UNIT
                 self.manCX += SCROLL_SPEED * JUMP_UNIT
                 self.scrollX += SCROLL_SPEED * JUMP_UNIT
@@ -312,7 +303,6 @@ class BicycleMan:
                 self.manCX2 += SCROLL_SPEED * JUMP_UNIT
                 self.scrollX2 += SCROLL_SPEED * JUMP_UNIT
 
-            
             self.manCY += self.speedY
             self.manCY2 += self.speedY2
             self.collision()
@@ -325,14 +315,14 @@ class BicycleMan:
             else:
                 self.jumpCount = MAX_JUMP_COUNT
 
-            if self.enableGravity2:
+            if self.enableGravity2 and self.isFlying2 == False:
                 self.speedY2 += GRAVITY   
             else:
                 self.jumpCount2 = MAX_JUMP_COUNT
             
-            if self.gameState == "PLAYING" and self.isUpperGameOver == False:
+            if self.gameState == "PLAYING" and self.isUpperGameOver == False and self.isFlying == False:
                 self.meterCount += 1
-            if self.gameState == "PLAYING" and self.isLowerGameOver == False:
+            if self.gameState == "PLAYING" and self.isLowerGameOver == False and self.isFlying2 == False:
                 self.meterCount2 += 1
 
             if self.gameState == "PLAYING" and self.isFlying == False:
@@ -342,7 +332,6 @@ class BicycleMan:
             if self.gameState == "PLAYING" and self.isFlying2 == False:
                 self.manCX2 += SCROLL_SPEED
                 self.scrollX2 += SCROLL_SPEED
-
           
         self.time += self.timerDelay
         if not self.c1Return:
@@ -406,7 +395,6 @@ class BicycleMan:
         self.drawHelpWindow(canvas)
         self.startTriger()
 
-
     def startTriger(self):
         if self.playMode == "Single Play":
             if self.gameState == "READY" and self.enableGravity == False:
@@ -415,7 +403,7 @@ class BicycleMan:
             if self.gameState == "READY" and self.enableGravity2 == False:
                 self.gameState = "PLAYING"
 
-    def man(self, canvas, cx, cy):
+    def man(self, canvas, cx, cy, fly = False):
 
         headCX = cx + WIDTH/75 * math.cos(math.pi/3+self.manAngle)
         headCY = cy - WIDTH/75 * math.sin(math.pi/3+self.manAngle)
@@ -456,17 +444,45 @@ class BicycleMan:
         armY2 = cy - WIDTH/100 * math.sin(math.pi*1.94+self.manAngle)
         canvas.create_line(armX1, armY1, armX2, armY2, fill="black", width=WIDTH/300)
 
+        if fly == True:
+            canvas.create_oval(bwheelCX - bwheelR-15, bwheelCY - bwheelR-4,bwheelCX - bwheelR+10, bwheelCY - bwheelR+4,fill="#F22547", width = 0)
+            canvas.create_oval(bwheelCX - bwheelR-15, bwheelCY - bwheelR-2,bwheelCX - bwheelR-5, bwheelCY - bwheelR+2,fill="#f5905c", width = 0)
+
 
 
     def drawMan(self, canvas):
-        if self.gameState == "READY" or self.gameState == "PLAYING":
+        if self.gameState == "READY":
+            if self.level == "Hard":
+                if self.playMode == "Double Play":
+                    self.man(canvas, self.manCX-self.scrollX, self.manCY-50)
+                    self.man(canvas, self.manCX2-self.scrollX2, self.manCY2-50)
+                else:
+                    self.man(canvas, self.manCX-self.scrollX, self.manCY)
+            else:
                 if self.playMode == "Single Play":
                     self.man(canvas, self.manCX-self.scrollX, self.manCY)
                 elif self.playMode == "Double Play":
-                    if not self.isUpperGameOver:
+                            self.man(canvas, self.manCX-self.scrollX, self.manCY)
+                            self.man(canvas, self.manCX2-self.scrollX2, self.manCY2)
+
+        if self.gameState == "PLAYING":
+            if self.playMode == "Single Play":
+                if self.isFlying:
+                    self.man(canvas, self.manCX-self.scrollX, self.manCY, True)
+                else:
+                    self.man(canvas, self.manCX-self.scrollX, self.manCY)
+            elif self.playMode == "Double Play":
+                if not self.isUpperGameOver:
+                    if self.isFlying:
+                        self.man(canvas, self.manCX-self.scrollX, self.manCY, True)
+                    else:
                         self.man(canvas, self.manCX-self.scrollX, self.manCY)
-                    if not self.isLowerGameOver:
+                if not self.isLowerGameOver:
+                    if self.isFlying2:
+                        self.man(canvas, self.manCX2-self.scrollX2, self.manCY2-70, True)
+                    else:
                         self.man(canvas, self.manCX2-self.scrollX2, self.manCY2)
+
         elif self.gameState == "START_SCREEN":
             if self.playMode == "Single Play":
                 self.man(canvas, self.sunCX, self.sunCY-self.sunR-10)
@@ -493,12 +509,8 @@ class BicycleMan:
             canvas.create_text(WIDTH/2, HEIGHT/2-30, text="BIKE MAN", font=titleFont, fill="black")
             canvas.create_rectangle(WIDTH/2-150, HEIGHT/2+150, WIDTH/2+150, HEIGHT/2+200,fill ="#273622",activefill="#32462c", width = 0)
             canvas.create_text(WIDTH/2,HEIGHT/2+175, text="PRESS TO START",fill = "white", font=buttonFont)
-            # canvas.create_rectangle(WIDTH/7-40, HEIGHT/7-15, WIDTH/7+43, HEIGHT/7+15,fill ="blue",activefill="#c06762", width = 0)
             canvas.create_text(WIDTH/7,HEIGHT/7, text="HELP",fill = "#e03753", font=headingFont,activefill="#e86a7f")
-            # canvas.create_rectangle(WIDTH*6/7-75, HEIGHT/7-15, WIDTH*6/7+75, HEIGHT/7+15,fill ="blue",activefill="#c06762", width = 0)
-            canvas.create_text(WIDTH*6/7,HEIGHT/7, text="SETTINGS",fill = "#e03753", font=headingFont,activefill="#e86a7f")
-            # canvas.create_rectangle(WIDTH/2-35, HEIGHT/2-38, WIDTH/2+30, HEIGHT/2,fill = "blue")
-            
+            canvas.create_text(WIDTH*6/7,HEIGHT/7, text="SETTINGS",fill = "#e03753", font=headingFont,activefill="#e86a7f")           
 
     def drawSettingsScreen(self, canvas):
         if self.gameState == "SETTINGS":
@@ -513,23 +525,19 @@ class BicycleMan:
             canvas.create_rectangle(WIDTH/4+120, HEIGHT*2/3-20, WIDTH/4+150, HEIGHT*2/3+20, fill ="#527248", width = 0)
             canvas.create_text(WIDTH/4, HEIGHT*2/3, text="Choose mode : ", font=paragraphFont)
             canvas.create_polygon(WIDTH/4+125, HEIGHT*2/3-8, WIDTH/4+145, HEIGHT*2/3-8, WIDTH/4+135, HEIGHT*2/3+8, fill="white")
-            # canvas.create_rectangle(WIDTH/2-73, HEIGHT*9/10-18,  WIDTH/2+72, HEIGHT*9/10+18, fill = "blue")
-            
             canvas.create_text(WIDTH/2, HEIGHT*9/10, text="HOME",fill ="#273622",activefill="#32462c", font =headingFont)
             
 
             if self.isLevelOptionOpen:
                 canvas.create_rectangle(WIDTH/4+150, HEIGHT/3-20, WIDTH/4+450, HEIGHT/3+20, fill ="#f0e486", width=0, activefill ="#f6f0ba")
-                canvas.create_text(WIDTH/4+300, HEIGHT/3, text ="level1",font=optionFont)
+                canvas.create_text(WIDTH/4+300, HEIGHT/3, text ="Nomal",font=optionFont)
                 canvas.create_rectangle(WIDTH/4+150, HEIGHT/3+20, WIDTH/4+450, HEIGHT/3+60, fill ="#e9d952", width=0, activefill ="#f6f0ba")
-                canvas.create_text(WIDTH/4+300, HEIGHT/3+40, text ="level2",font=optionFont)
-                canvas.create_rectangle(WIDTH/4+150, HEIGHT/3+60, WIDTH/4+450, HEIGHT/3+100, fill ="#e2ce1e", width=0, activefill ="#f6f0ba")
-                canvas.create_text(WIDTH/4+300, HEIGHT/3+80, text ="level3",font=optionFont)
+                canvas.create_text(WIDTH/4+300, HEIGHT/3+40, text ="Hard",font=optionFont)
 
             if self.isLevelSelected:
                 self.isLevelOptionOpen = False
                 canvas.create_rectangle(WIDTH/4+150, HEIGHT/3-20, WIDTH/4+450, HEIGHT/3+20, fill ="#f0e486", width=0, activefill ="#f6f0ba")
-                canvas.create_text(WIDTH/4+300, HEIGHT/3, text ="level%d" % (self.level),font=optionFont)
+                canvas.create_text(WIDTH/4+300, HEIGHT/3, text ="%s" % (self.level),font=optionFont)
 
             if self.isModeOptionOpen:
                 canvas.create_rectangle(WIDTH/4+150, HEIGHT*2/3-20, WIDTH/4+450, HEIGHT*2/3+20, fill ="#b8ceb1", width=0, activefill ="#d9e5d5")
@@ -596,7 +604,6 @@ class BicycleMan:
                 canvas.create_text(WIDTH * 1/10-20, HEIGHT * 6/10-25, text = "%dm" % (self.meterCount2), fill = "black", font=meterFont)
             pass
 
-    #CITATION algorithm from http://tokibito.hatenablog.com/entry/20121227/1356581559
     def collisionRectRect(self, rect, rect2):
         if rect[2] < rect2[0]:
             return ""
@@ -607,9 +614,12 @@ class BicycleMan:
         if rect2[3] < rect[1]:
             return ""
 
-        dy = rect2[3] - rect[1] #Upper
-        dx1 = rect2[2] - rect[0] #Left
-        dx2 = rect[2] - rect2[0] #Right
+        #Upper
+        dy = rect2[3] - rect[1] 
+        #Left
+        dx1 = rect2[2] - rect[0]
+        #Right 
+        dx2 = rect[2] - rect2[0] 
 
         if dy < dx1 and dy < dx2:
             return "Upper"
@@ -689,7 +699,7 @@ class BicycleMan:
 
     def flyMan(self):
         if self.playMode == "Single Play":
-            if self.fanGet == 1:
+            if self.fanGet == FAN_NUM_GOAL:
                 self.isFlying = True
                 self.flyStartTime = self.time
                 self.fanGet = 0
@@ -697,7 +707,7 @@ class BicycleMan:
             if self.time - self.flyStartTime > FLY_DURATION:
                     self.isFlying = False
         elif self.playMode == "Double Play":
-            if self.fanGet == 1:
+            if self.fanGet == FAN_NUM_GOAL:
                 self.isFlying = True
                 self.flyStartTime = self.time
                 self.fanGet = 0
@@ -705,7 +715,7 @@ class BicycleMan:
             if self.time - self.flyStartTime > FLY_DURATION:
                     self.isFlying = False
 
-            if self.fanGet2 == 1:
+            if self.fanGet2 == FAN_NUM_GOAL:
                 self.isFlying2 = True
                 self.flyStartTime2 = self.time
                 self.fanGet2 = 0
@@ -744,7 +754,7 @@ class BicycleMan:
     def createGround(self):
         if self.playMode == "Single Play":
             if self.gameState == "READY" or self.gameState == "PLAYING":
-                if self.level == 1:
+                if self.level == "Normal":
                     while(self.gStart < self.scrollX + WIDTH):
                         self.fanCount += 1
                         gWidth = random.randint(GROUND_WIDTH_MIN_MODE1, GROUND_WIDTH_MAX_MODE1)
@@ -756,7 +766,7 @@ class BicycleMan:
                             self.fanList.append([self.gStart+gWidth/2, HEIGHT-gHeight-10, FAN_START_ANGLE])
                         self.gStart += gWidth + random.randint(GROUND_MERGIN_MIN_MODE1, GROUND_MERGIN_MAX_MODE1)
 
-                elif self.level == 2:
+                elif self.level == "Hard":
                     while(self.gStart2 < self.scrollX + WIDTH):
                         self.fanCount += 1
                         gWidth = random.randint(GROUND_WIDTH_MIN_MODE2, GROUND_WIDTH_MAX_MODE2)
@@ -765,7 +775,7 @@ class BicycleMan:
                         color = random.choice(colors)
                         self.groundList.append([self.gStart2, HEIGHT-gHeight, self.gStart2+gWidth, HEIGHT, color])
                         if self.fanCount % FAN_FREQUENCY == 0:
-                            self.fanList.append([self.gStart+gWidth/2, HEIGHT-gHeight-10, FAN_START_ANGLE])
+                            self.fanList.append([self.gStart2+gWidth/2, HEIGHT-gHeight-10, FAN_START_ANGLE])
                         self.gStart2 += gWidth + random.randint(GROUND_MERGIN_MIN_MODE2, GROUND_MERGIN_MAX_MODE2)
 
                 while self.groundList[0][2]-self.scrollX  < 0:
@@ -778,7 +788,7 @@ class BicycleMan:
         elif self.playMode == "Double Play":
             if self.gameState == "READY" or self.gameState == "PLAYING":
                 while(self.gStart < self.scrollX + WIDTH):
-                    if self.level == 1:
+                    if self.level == "Normal":
                         self.fanCount += 1
                         gWidth = random.randint(GROUND_WIDTH_MIN_MODE1, GROUND_WIDTH_MAX_MODE1)
                         gHeight = random.randint(GROUND_HEIGHT_MIN_MODE1/2, GROUND_HEIGHT_MAX_MODE1/2)
@@ -790,10 +800,10 @@ class BicycleMan:
                             
                         self.gStart += gWidth + random.randint(GROUND_MERGIN_MIN_MODE1, GROUND_MERGIN_MAX_MODE1)
 
-                    elif self.level == 2:
+                    elif self.level == "Hard":
                         self.fanCount += 1
                         gWidth = random.randint(GROUND_WIDTH_MIN_MODE2, GROUND_WIDTH_MAX_MODE2)
-                        gHeight = random.randint(GROUND_HEIGHT_MIN_MODE2/2, GROUND_HEIGHT_MAX_MODE2/2)
+                        gHeight = random.randint(GROUND_HEIGHT_MIN_MODE2/2-40, GROUND_HEIGHT_MAX_MODE2/2-20)
                         colors = ["#bf7a4a"]
                         color = random.choice(colors)
                         self.groundList.append([self.gStart, HEIGHT/2-gHeight, self.gStart+gWidth, HEIGHT/2, color])
@@ -811,7 +821,7 @@ class BicycleMan:
 
 
                 while(self.gStart2 < self.scrollX2 + WIDTH):
-                    if self.level == 1:
+                    if self.level == "Normal":
                         self.fanCount2 += 1
                         gWidth = random.randint(GROUND_WIDTH_MIN_MODE1, GROUND_WIDTH_MAX_MODE1)
                         gHeight = random.randint(GROUND_HEIGHT_MIN_MODE1/2, GROUND_HEIGHT_MAX_MODE1/2)
@@ -822,7 +832,7 @@ class BicycleMan:
                             self.fanList2.append([self.gStart2+gWidth/2, HEIGHT-gHeight-10, FAN_START_ANGLE])
                         self.gStart2 += gWidth + random.randint(GROUND_MERGIN_MIN_MODE1, GROUND_MERGIN_MAX_MODE1)
 
-                    elif self.level == 2:
+                    elif self.level == "Hard":
                         self.fanCount2 += 1
                         gWidth = random.randint(GROUND_WIDTH_MIN_MODE2, GROUND_WIDTH_MAX_MODE2)
                         gHeight = random.randint(GROUND_HEIGHT_MIN_MODE2/2, GROUND_HEIGHT_MAX_MODE2/2)
@@ -957,15 +967,23 @@ class BicycleMan:
         return canvas.create_polygon(points, **kwargs, smooth=True)
 
     def drawSun(self,canvas):
+        if self.level == "Normal":
+            color = "#F22547"
+        elif self.level == "Hard":
+            color = "#f0a21a"
         if self.playMode == "Single Play":
-            canvas.create_oval(self.sunCX-self.sunR, self.sunCY-self.sunR,self.sunCX+self.sunR, self.sunCY+self.sunR, fill="#F22547",width=0)
+            canvas.create_oval(self.sunCX-self.sunR, self.sunCY-self.sunR,self.sunCX+self.sunR, self.sunCY+self.sunR, fill= color ,width=0)
         elif self.playMode == "Double Play":
-            canvas.create_oval(self.sunCX-self.sunR/2, self.sunCY/2-self.sunR/2,self.sunCX+self.sunR/2, self.sunCY/2+self.sunR/2, fill="#F22547",width=0)
-            canvas.create_oval(self.sunCX-self.sunR/2, self.sunCY*3/2-self.sunR/2,self.sunCX+self.sunR/2, self.sunCY*3/2+self.sunR/2, fill="#F22547",width=0)
+            canvas.create_oval(self.sunCX-self.sunR/2, self.sunCY/2-self.sunR/2,self.sunCX+self.sunR/2, self.sunCY/2+self.sunR/2, fill=color,width=0)
+            canvas.create_oval(self.sunCX-self.sunR/2, self.sunCY*3/2-self.sunR/2,self.sunCX+self.sunR/2, self.sunCY*3/2+self.sunR/2, fill=color,width=0)
             pass
     
     def drawBackground(self, canvas):
-        canvas.create_rectangle(0, 0, WIDTH, HEIGHT,fill="#EDEACC", width=0)
+        if self.level == "Normal":
+            color = "#EDEACC"
+        elif self.level == "Hard":
+            color = "#052354"
+        canvas.create_rectangle(0, 0, WIDTH, HEIGHT,fill=color, width=0)
     
     def drawFuji(self, canvas):
         if self.playMode == "Single Play":
@@ -1170,9 +1188,7 @@ class BicycleMan:
         def timerFiredWrapper(self, canvas):
             redrawAllWrapper(self, canvas)
             self.timerFired(canvas)
-            
-            
-            
+   
             # pause, then call timerFired again
             canvas.after(self.timerDelay, timerFiredWrapper, self, canvas)
         # Set up data and call init
