@@ -499,7 +499,7 @@ class BicycleMan:
 
     def drawStartScreen(self,canvas):
         if self.gameState == "START_SCREEN":
-            titleFont = tkinter.font.Font(family = "Optima Extrablack", size = 150)
+            titleFont = tkinter.font.Font(family = "Optima Extrablack", size = 180)
             headingFont = tkinter.font.Font(family = "Optima Bold", size = 37)
             buttonFont = tkinter.font.Font(family = "Optima Bold", size = 30)
             canvas.create_text(WIDTH/2, HEIGHT/2-30, text="BIKE MAN", font=titleFont, fill="black")
@@ -1012,18 +1012,18 @@ class BicycleMan:
 
     
     def drawLight(self, canvas):
-        if self.gameState == "READY" or self.gameState == "PLAYING":
-            if self.playMode == "Single Play":
-                cx = self.sunCX
-                cy = self.sunCY
-                r = self.lightR
-                color = "#F0E68C"
-                canvas.create_arc(cx-r, cy-r, cx+r, cy+r,start=self.lightStart, extent=15, style="pieslice",fill=color, outline="#EDEACC")
-                canvas.create_arc(cx-r, cy-r, cx+r, cy+r,start=self.lightStart+60, extent=15, style="pieslice",fill=color, outline="#EDEACC")
-                canvas.create_arc(cx-r, cy-r, cx+r, cy+r,start=self.lightStart+120, extent=15, style="pieslice",fill=color, outline="#EDEACC")
-                canvas.create_arc(cx-r, cy-r, cx+r, cy+r,start=self.lightStart+180, extent=15, style="pieslice",fill=color, outline="#EDEACC")
-                canvas.create_arc(cx-r, cy-r, cx+r, cy+r,start=self.lightStart+240, extent=15, style="pieslice",fill=color, outline="#EDEACC")
-                canvas.create_arc(cx-r, cy-r, cx+r, cy+r,start=self.lightStart+300, extent=15, style="pieslice",fill=color, outline="#EDEACC")
+        # if self.gameState == "READY" or self.gameState == "PLAYING":
+        if self.playMode == "Single Play":
+            cx = self.sunCX
+            cy = self.sunCY
+            r = self.lightR
+            color = "#F0E68C"
+            canvas.create_arc(cx-r, cy-r, cx+r, cy+r,start=self.lightStart, extent=15, style="pieslice",fill=color, outline="#EDEACC")
+            canvas.create_arc(cx-r, cy-r, cx+r, cy+r,start=self.lightStart+60, extent=15, style="pieslice",fill=color, outline="#EDEACC")
+            canvas.create_arc(cx-r, cy-r, cx+r, cy+r,start=self.lightStart+120, extent=15, style="pieslice",fill=color, outline="#EDEACC")
+            canvas.create_arc(cx-r, cy-r, cx+r, cy+r,start=self.lightStart+180, extent=15, style="pieslice",fill=color, outline="#EDEACC")
+            canvas.create_arc(cx-r, cy-r, cx+r, cy+r,start=self.lightStart+240, extent=15, style="pieslice",fill=color, outline="#EDEACC")
+            canvas.create_arc(cx-r, cy-r, cx+r, cy+r,start=self.lightStart+300, extent=15, style="pieslice",fill=color, outline="#EDEACC")
                 
         
     def cloud(self, canvas, x, y):

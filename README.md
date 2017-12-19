@@ -11,6 +11,11 @@ There is also an item feature. Once you get 3 fans, you'll get a boost, which al
 For single player mode -  press "Up" to jump.  
 For multiplayer mode -  player1 (upper screen) :  press "E" to jump /  player2 (lower screen) : press "Up" to jump.  
 
+## Demo
+Please watch this video on Youtube.
+https://youtu.be/83xcLtBWqv8
+
+
 ## Features
 
 - smooth action of the character
