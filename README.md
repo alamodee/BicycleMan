@@ -12,8 +12,8 @@ For single player mode -  press "Up" to jump.
 For multiplayer mode -  player1 (upper screen) :  press "E" to jump /  player2 (lower screen) : press "Up" to jump.  
 
 ## Demo
-Please watch this video on Youtube.
-https://youtu.be/83xcLtBWqv8
+Please watch this video on Youtube.  
+https://youtu.be/y7HDVJXYycA
 
 
 ## Features
